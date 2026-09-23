@@ -229,7 +229,7 @@ async function runSearch() {
     <div class="result">
       <span class="pill ${r.classification.replace(' ','_')}">${r.classification}</span>
       <strong>${r.title}</strong>
-      <div class="meta">${r.source_system} &middot; ${r.record_type} &middot; score ${r.score}</div>
+      <div class="meta">${r.source_system} &middot; ${r.record_type} &middot; combined ${r.score} (dense ${r.dense_score}, sparse ${r.sparse_score})</div>
       <div style="margin-top:4px; color:var(--dim)">${r.text}</div>
     </div>`).join('');
 }
@@ -293,7 +293,7 @@ async function refreshAlerts() {
   el.innerHTML = alerts.map(a => `
     <div class="alert-item">
       <span><span class="sev ${a.severity}">${a.severity}</span> ${a.message}</span>
-      <span class="meta">z=${a.z_score}</span>
+      <span class="meta">z=${a.z_score} &middot; iqr=[${a.iqr_lower}, ${a.iqr_upper}] &middot; via ${a.method}</span>
     </div>`).join('');
 }
 

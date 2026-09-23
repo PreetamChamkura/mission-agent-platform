@@ -87,8 +87,9 @@ def search(q: str, top_k: int = 5, max_classification: str = "SECRET"):
         "query": q,
         "results": [
             {
-                "doc_id": h.doc.doc_id, "score": round(h.score, 4), "title": h.doc.title,
-                "source_system": h.doc.source_system, "record_type": h.doc.record_type,
+                "doc_id": h.doc.doc_id, "score": round(h.score, 4),
+                "dense_score": round(h.dense_score, 4), "sparse_score": round(h.sparse_score, 4),
+                "title": h.doc.title, "source_system": h.doc.source_system, "record_type": h.doc.record_type,
                 "classification": h.doc.classification, "text": h.doc.text[:400],
             }
             for h in hits
@@ -158,7 +159,8 @@ def get_anomalies(limit: int = 50):
         {
             "alert_id": a.alert_id, "metric": a.metric, "value": a.value,
             "baseline_mean": round(a.baseline_mean, 2), "z_score": round(a.z_score, 2),
-            "severity": a.severity, "message": a.message, "ts": a.ts,
+            "iqr_lower": round(a.iqr_lower, 2), "iqr_upper": round(a.iqr_upper, 2),
+            "method": a.method, "severity": a.severity, "message": a.message, "ts": a.ts,
         }
         for a in alerts
     ]
