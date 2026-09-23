@@ -1,0 +1,24 @@
+# Default-deny egress except DNS. In an air-gapped cluster there is no
+# external network to reach anyway, but the policy documents and enforces
+# the intent: this workload should never make an outbound call, since all
+# retrieval runs against the local RAG index rather than a hosted API.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mission-agent-platform-default-deny-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: mission-agent-platform
+  policyTypes: ["Ingress", "Egress"]
+  ingress:
+    - from:
+        - podSelector: {}
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

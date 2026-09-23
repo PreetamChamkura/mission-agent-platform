@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+mission_platform.db
+deploy/wheelhouse/
+.DS_Store

@@ -1,0 +1,11 @@
+permit_id,applicant,facility_type,county,status,notes
+P-10001,Sample Corp,wastewater treatment,Rivertown,active,"Routine renewal, no violations on file"
+P-10002,Greenfield Farms,agricultural runoff,Millbrook,active,Nutrient management plan updated 2026
+P-10003,Northgate Logistics,fuel storage,Rivertown,under_review,Tank integrity report overdue by 40 days
+P-10004,Sample Corp,wastewater treatment,Ashford,expired,Renewal application not received
+P-10005,Blue Ridge Mining,air emissions,Halston,active,Quarterly monitoring within limits
+P-10006,Northgate Logistics,fuel storage,Millbrook,active,No incidents reported this cycle
+P-10007,Coastal Energy,air emissions,Ashford,under_review,Elevated particulate readings flagged for follow-up
+P-10008,Greenfield Farms,agricultural runoff,Halston,active,Annual inspection passed
+P-10009,Blue Ridge Mining,wastewater treatment,Rivertown,suspended,Unresolved violation from prior quarter
+P-10010,Coastal Energy,fuel storage,Ashford,active,Standard operating conditions

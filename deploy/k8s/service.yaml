@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mission-agent-platform
+spec:
+  selector:
+    app: mission-agent-platform
+  ports:
+    - port: 80
+      targetPort: 8000
+  type: ClusterIP

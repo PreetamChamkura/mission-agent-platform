@@ -1,0 +1,6 @@
+incident_id,category,location,severity,summary
+INC-5001,perimeter_breach,Rivertown Facility,high,"Unauthorized access attempt at secondary gate, contained by security"
+INC-5002,cyber,Millbrook Data Center,critical,"Anomalous outbound traffic detected, isolated affected subnet pending forensics"
+INC-5003,safety,Halston Mining Site,medium,"Equipment malfunction caused temporary evacuation, no injuries"
+INC-5004,perimeter_breach,Ashford Facility,low,"Sensor false positive traced to wildlife activity"
+INC-5005,cyber,Coastal Operations Center,high,"Phishing campaign targeting facility credentials, two accounts reset"

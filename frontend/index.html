@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Mission Agent Platform</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0b0f14; --panel: #121820; --panel2: #161d27; --border: #232c38;
+    --text: #e6edf3; --dim: #8b98a5; --accent: #4fa3ff; --good: #35c37a;
+    --warn: #e8b34a; --bad: #e8544a; --mono: 'SF Mono', Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+  header { padding:16px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  header h1 { font-size:16px; margin:0; letter-spacing:.3px; }
+  header .badge { font-size:11px; color:var(--dim); border:1px solid var(--border); padding:3px 8px; border-radius:12px; }
+  nav { display:flex; gap:4px; padding:8px 24px; border-bottom:1px solid var(--border); background:var(--panel); }
+  nav button { background:none; border:none; color:var(--dim); padding:8px 14px; font-size:13px; cursor:pointer; border-radius:6px; }
+  nav button.active { color:var(--text); background:var(--panel2); }
+  main { padding:20px 24px; max-width:1200px; margin:0 auto; }
+  .tab { display:none; }
+  .tab.active { display:block; }
+  .grid { display:grid; gap:14px; }
+  .grid.cols-2 { grid-template-columns:1fr 1fr; }
+  .grid.cols-3 { grid-template-columns:repeat(3,1fr); }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:16px; }
+  .card h3 { margin:0 0 10px; font-size:12px; text-transform:uppercase; letter-spacing:.6px; color:var(--dim); }
+  .stat { font-size:26px; font-weight:600; }
+  .stat-label { font-size:12px; color:var(--dim); margin-top:2px; }
+  input, select, textarea { background:var(--panel2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:8px 10px; font-size:13px; width:100%; }
+  button.btn { background:var(--accent); color:#fff; border:none; border-radius:6px; padding:9px 16px; font-size:13px; cursor:pointer; }
+  button.btn.secondary { background:var(--panel2); border:1px solid var(--border); color:var(--text); }
+  .row { display:flex; gap:10px; align-items:center; }
+  .result { border-top:1px solid var(--border); padding:10px 0; font-size:13px; }
+  .result .meta { color:var(--dim); font-size:11px; margin-top:4px; }
+  .pill { display:inline-block; font-size:10px; padding:2px 7px; border-radius:10px; border:1px solid var(--border); margin-right:6px; }
+  .pill.PUBLIC { color:#8b98a5; } .pill.CUI { color:var(--accent); } .pill.CONFIDENTIAL { color:var(--warn); }
+  .pill.SECRET, .pill.TOP_SECRET { color:var(--bad); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--border); }
+  th { color:var(--dim); font-weight:500; font-size:11px; text-transform:uppercase; }
+  tr:hover { background:var(--panel2); cursor:pointer; }
+  .state { font-size:11px; padding:2px 8px; border-radius:10px; }
+  .state.completed { background:rgba(53,195,122,.15); color:var(--good); }
+  .state.denied { background:rgba(232,84,74,.15); color:var(--bad); }
+  .state.requires_approval { background:rgba(232,179,74,.15); color:var(--warn); }
+  .state.running, .state.queued { background:rgba(79,163,255,.15); color:var(--accent); }
+  .state.failed { background:rgba(232,84,74,.15); color:var(--bad); }
+  .trace-step { border-left:2px solid var(--border); padding:8px 0 8px 14px; margin-left:4px; font-size:13px; }
+  .trace-step .kind { font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:var(--dim); }
+  .trace-step.guardrail { border-left-color:var(--warn); }
+  .trace-step.evidence { border-left-color:var(--accent); }
+  .trace-step.answer { border-left-color:var(--good); }
+  .alert-item { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); font-size:13px; }
+  .sev { font-size:10px; padding:2px 8px; border-radius:10px; }
+  .sev.warning { background:rgba(232,179,74,.15); color:var(--warn); }
+  .sev.critical { background:rgba(232,84,74,.15); color:var(--bad); }
+  .sev.watch { background:rgba(139,152,165,.15); color:var(--dim); }
+  .eval-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); }
+  .eval-row .req { font-size:13px; } .eval-row .detail { font-size:11px; color:var(--dim); }
+  .pass { color:var(--good); } .fail { color:var(--bad); }
+  .empty { color:var(--dim); font-size:13px; padding:20px 0; text-align:center; }
+  code { font-family:var(--mono); background:var(--panel2); padding:1px 5px; border-radius:4px; font-size:12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Mission Agent Platform</h1>
+  <span class="badge" id="statusBadge">connecting...</span>
+</header>
+
+<nav>
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="explore">Query & Explore</button>
+  <button class="tab-btn" data-tab="fleet">Agent Fleet</button>
+  <button class="tab-btn" data-tab="trace">Decision Traces</button>
+  <button class="tab-btn" data-tab="anomaly">Anomaly Alerts</button>
+  <button class="tab-btn" data-tab="eval">Reliability Evals</button>
+</nav>
+
+<main>
+
+  <section class="tab active" id="tab-overview">
+    <div class="grid cols-3">
+      <div class="card"><h3>Documents Indexed</h3><div class="stat" id="statDocs">-</div><div class="stat-label">across siloed source systems</div></div>
+      <div class="card"><h3>Fleet Workers</h3><div class="stat" id="statWorkers">-</div><div class="stat-label">async worker pool</div></div>
+      <div class="card"><h3>Tasks Processed</h3><div class="stat" id="statTasks">-</div><div class="stat-label">queued / running / done</div></div>
+    </div>
+    <div class="grid cols-2" style="margin-top:14px">
+      <div class="card">
+        <h3>Sources Onboarded</h3>
+        <div id="sourceList" class="empty">loading...</div>
+      </div>
+      <div class="card">
+        <h3>Platform Capabilities</h3>
+        <div style="font-size:13px; line-height:1.9; color:var(--dim)">
+          Guardrails &middot; RAG over heterogeneous sources &middot; Async agent fleet &middot;
+          Anomaly alerting &middot; Decision-trace explainability &middot; Data pipelines &middot;
+          Reliability evals &middot; Analyst query/viz &middot; Air-gapped deployable
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-explore">
+    <div class="card">
+      <h3>Ask an Agent (goes through full guardrail + RAG + audit pipeline)</h3>
+      <div class="row">
+        <select id="agentRole" style="max-width:200px">
+          <option value="research_agent">research_agent</option>
+          <option value="compliance_agent">compliance_agent</option>
+          <option value="coordinator_agent">coordinator_agent</option>
+        </select>
+        <input id="queryInput" placeholder="e.g. inspection findings with unresolved status" />
+        <button class="btn" onclick="submitTask()">Submit Task</button>
+      </div>
+      <div id="taskSubmitResult" style="margin-top:10px; font-size:13px; color:var(--dim)"></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Direct Evidence Search</h3>
+      <div class="row">
+        <input id="searchInput" placeholder="search documents directly..." />
+        <select id="maxClass" style="max-width:160px">
+          <option value="SECRET">up to SECRET</option>
+          <option value="CONFIDENTIAL">up to CONFIDENTIAL</option>
+          <option value="CUI">up to CUI</option>
+        </select>
+        <button class="btn secondary" onclick="runSearch()">Search</button>
+      </div>
+      <div id="searchResults"></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-fleet">
+    <div class="card">
+      <h3>Task Queue</h3>
+      <table>
+        <thead><tr><th>Task</th><th>Agent</th><th>Query</th><th>State</th></tr></thead>
+        <tbody id="taskTable"><tr><td colspan="4" class="empty">no tasks yet</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-trace">
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Recent Decision Traces</h3>
+        <div id="traceList"><div class="empty">no traces yet</div></div>
+      </div>
+      <div class="card">
+        <h3>Trace Detail</h3>
+        <div id="traceDetail"><div class="empty">select a trace</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-anomaly">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h3 style="margin:0">Live Alerts</h3>
+        <button class="btn secondary" onclick="simulateMetrics()">Simulate incoming data tick</button>
+      </div>
+      <div id="alertList" style="margin-top:10px"><div class="empty">no alerts yet</div></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-eval">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h3 style="margin:0">Mission Reliability Report</h3>
+        <button class="btn" onclick="runEval()">Run Eval Suite</button>
+      </div>
+      <div id="evalResults" style="margin-top:10px"><div class="empty">run the suite to see results</div></div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const API = '';
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+async function jget(path) { const r = await fetch(API + path); return r.json(); }
+async function jpost(path, body) {
+  const r = await fetch(API + path, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body||{}) });
+  return r.json();
+}
+
+async function refreshOverview() {
+  try {
+    const s = await jget('/api/stats');
+    document.getElementById('statusBadge').textContent = 'live';
+    document.getElementById('statDocs').textContent = s.rag_index.total_documents;
+    document.getElementById('statWorkers').textContent = s.fleet.num_workers;
+    document.getElementById('statTasks').textContent = s.fleet.total_tasks;
+    const sources = Object.entries(s.rag_index.by_source_system)
+      .map(([k,v]) => `<div class="alert-item"><span>${k}</span><span>${v} docs</span></div>`).join('');
+    document.getElementById('sourceList').innerHTML = sources || '<div class="empty">none</div>';
+  } catch(e) { document.getElementById('statusBadge').textContent = 'offline'; }
+}
+
+async function submitTask() {
+  const agent_role = document.getElementById('agentRole').value;
+  const query = document.getElementById('queryInput').value.trim();
+  if (!query) return;
+  const res = await jpost('/api/tasks', { agent_role, query });
+  document.getElementById('taskSubmitResult').textContent = `Submitted ${res.task_id} (${res.state}). Check the Agent Fleet tab.`;
+  refreshFleet();
+}
+
+async function runSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+  const maxClass = document.getElementById('maxClass').value;
+  const res = await jget(`/api/search?q=${encodeURIComponent(q)}&max_classification=${maxClass}`);
+  const el = document.getElementById('searchResults');
+  if (!res.results.length) { el.innerHTML = '<div class="empty">no matches</div>'; return; }
+  el.innerHTML = res.results.map(r => `
+    <div class="result">
+      <span class="pill ${r.classification.replace(' ','_')}">${r.classification}</span>
+      <strong>${r.title}</strong>
+      <div class="meta">${r.source_system} &middot; ${r.record_type} &middot; score ${r.score}</div>
+      <div style="margin-top:4px; color:var(--dim)">${r.text}</div>
+    </div>`).join('');
+}
+
+async function refreshFleet() {
+  const tasks = await jget('/api/tasks');
+  const el = document.getElementById('taskTable');
+  if (!tasks.length) { el.innerHTML = '<tr><td colspan="4" class="empty">no tasks yet</td></tr>'; return; }
+  el.innerHTML = tasks.map(t => `
+    <tr onclick="showTraceFor('${t.task_id}')">
+      <td><code>${t.task_id}</code></td>
+      <td>${t.agent_role}</td>
+      <td>${t.query}</td>
+      <td><span class="state ${t.state}">${t.state}</span></td>
+    </tr>`).join('');
+  refreshOverview();
+}
+
+async function refreshTraces() {
+  const traces = await jget('/api/traces');
+  const el = document.getElementById('traceList');
+  if (!traces.length) { el.innerHTML = '<div class="empty">no traces yet</div>'; return; }
+  el.innerHTML = traces.map(t => `
+    <div class="alert-item" style="cursor:pointer" onclick="renderTrace(${JSON.stringify(t).replace(/"/g,'&quot;')})">
+      <span><code>${t.task_id}</code> &middot; ${t.agent_role}</span>
+      <span class="state ${t.status}">${t.status}</span>
+    </div>`).join('');
+}
+
+async function showTraceFor(taskId) {
+  document.querySelector('.tab-btn[data-tab="trace"]').click();
+  try {
+    const t = await jget(`/api/traces/${taskId}`);
+    renderTrace(t);
+  } catch(e) {}
+  refreshTraces();
+}
+
+function renderTrace(t) {
+  const el = document.getElementById('traceDetail');
+  const steps = t.steps.map(s => `
+    <div class="trace-step ${s.kind}">
+      <div class="kind">${s.kind}</div>
+      <div>${s.summary}</div>
+      ${Object.keys(s.detail||{}).length ? `<div class="meta" style="color:var(--dim); font-size:11px">${JSON.stringify(s.detail)}</div>` : ''}
+    </div>`).join('');
+  el.innerHTML = `
+    <div style="margin-bottom:10px">
+      <strong>${t.task_id}</strong> &middot; ${t.agent_role} &middot;
+      <span class="state ${t.status}">${t.status}</span>
+      ${t.confidence ? `&middot; confidence ${(t.confidence*100).toFixed(0)}%` : ''}
+    </div>
+    <div style="color:var(--dim); font-size:13px; margin-bottom:10px">Goal: ${t.goal}</div>
+    ${steps}`;
+}
+
+async function refreshAlerts() {
+  const alerts = await jget('/api/anomalies');
+  const el = document.getElementById('alertList');
+  if (!alerts.length) { el.innerHTML = '<div class="empty">no alerts yet — try simulating a data tick</div>'; return; }
+  el.innerHTML = alerts.map(a => `
+    <div class="alert-item">
+      <span><span class="sev ${a.severity}">${a.severity}</span> ${a.message}</span>
+      <span class="meta">z=${a.z_score}</span>
+    </div>`).join('');
+}
+
+async function simulateMetrics() {
+  await jpost('/api/metrics/simulate', {});
+  refreshAlerts();
+}
+
+async function runEval() {
+  const el = document.getElementById('evalResults');
+  el.innerHTML = '<div class="empty">running...</div>';
+  const report = await jget('/api/eval');
+  el.innerHTML = `
+    <div style="margin-bottom:14px" class="row">
+      <div class="card" style="flex:1"><h3>Pass Rate</h3><div class="stat">${(report.pass_rate*100).toFixed(0)}%</div></div>
+      <div class="card" style="flex:1"><h3>Passed / Total</h3><div class="stat">${report.passed}/${report.total}</div></div>
+    </div>
+    ${report.outcomes.map(o => `
+      <div class="eval-row">
+        <div>
+          <div class="req">${o.passed ? '<span class="pass">PASS</span>' : '<span class="fail">FAIL</span>'} ${o.case_id}: ${o.requirement}</div>
+          <div class="detail">${o.detail} &middot; ${o.latency_ms}ms</div>
+        </div>
+      </div>`).join('')}`;
+}
+
+refreshOverview();
+refreshFleet();
+refreshTraces();
+refreshAlerts();
+setInterval(() => { refreshOverview(); refreshFleet(); refreshTraces(); }, 4000);
+</script>
+
+</body>
+</html>

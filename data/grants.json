@@ -1,0 +1,8 @@
+[
+  {"grant_id": "G-2201", "recipient": "Riverside Water Authority", "program": "Clean Water Infrastructure", "amount_usd": 4200000, "fiscal_year": 2025, "risk_notes": "On schedule, quarterly reporting current"},
+  {"grant_id": "G-2202", "recipient": "Millbrook Regional Health", "program": "Rural Health Access", "amount_usd": 1850000, "fiscal_year": 2025, "risk_notes": "Reporting delinquent for two consecutive quarters"},
+  {"grant_id": "G-2203", "recipient": "Halston County Schools", "program": "STEM Education Expansion", "amount_usd": 950000, "fiscal_year": 2026, "risk_notes": "No issues identified"},
+  {"grant_id": "G-2204", "recipient": "Ashford Emergency Services", "program": "First Responder Modernization", "amount_usd": 3100000, "fiscal_year": 2026, "risk_notes": "Budget variance exceeds 15 percent, flagged for audit"},
+  {"grant_id": "G-2205", "recipient": "Coastal Resilience Trust", "program": "Climate Adaptation", "amount_usd": 6750000, "fiscal_year": 2025, "risk_notes": "Subrecipient monitoring overdue"},
+  {"grant_id": "G-2206", "recipient": "Riverside Water Authority", "program": "Clean Water Infrastructure", "amount_usd": 1200000, "fiscal_year": 2026, "risk_notes": "Supplemental award, no findings"}
+]

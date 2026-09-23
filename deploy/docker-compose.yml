@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  mission-agent-platform:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: mission-agent-platform:local
+    ports:
+      - "8000:8000"
+    volumes:
+      - mission-db:/app/data-state
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+volumes:
+  mission-db:
